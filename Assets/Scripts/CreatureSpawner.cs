@@ -5,7 +5,7 @@ public class CreatureSpawner : MonoBehaviour
 {
     [SerializeField] private float _repeateRate = 2;
     [SerializeField] private Creature _creaturePrefab;
-    [SerializeField] private Transform[] _spawnPoints;
+    [SerializeField] private Target _target;
 
     private ObjectPool<Creature> _pool;
     private readonly int _poolCapacity = 10;
@@ -29,11 +29,10 @@ public class CreatureSpawner : MonoBehaviour
 
     private void ActionOnget(Creature creature)
     {
-        int numberSpawn = Random.Range(0, _spawnPoints.Length);
-
         creature.ActionEnd += Release;
-        creature.transform.position = _spawnPoints[numberSpawn].position;
-        creature.transform.rotation = _spawnPoints[numberSpawn].rotation;
+        creature.Init(_target);
+        creature.transform.position = transform.position;
+        creature.transform.rotation = transform.rotation;
         creature.gameObject.SetActive(true);
     }
 
