@@ -8,10 +8,9 @@ public class Creature : MonoBehaviour
     [SerializeField] private int _timeTimer = 10;
 
     private Mover _mover;
-    private Rigidbody _rigidbody;
     private Target _target;
 
-    public event Action<Creature> ActionEnd;
+    public event Action<Creature> Reached;
 
     public void Init(Target target)
     {
@@ -22,18 +21,17 @@ public class Creature : MonoBehaviour
     private void Awake()
     {
         _mover = GetComponent<Mover>();
-        _rigidbody = GetComponent<Rigidbody>();
     }
 
     private void OnEnable()
     {
-        StartCoroutine(nameof(Destroyer));
+        StartCoroutine(Destroyer());
     }
 
     private IEnumerator Destroyer()
     {
         yield return new WaitForSeconds(_timeTimer);
 
-        ActionEnd?.Invoke(this);
+        Reached?.Invoke(this);
     }
 }

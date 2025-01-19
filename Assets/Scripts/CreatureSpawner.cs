@@ -1,25 +1,22 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
 public class CreatureSpawner : MonoBehaviour
 {
-    [SerializeField] private float _repeateRate = 2;
-    [SerializeField] private Creature _creaturePrefab;
-    [SerializeField] private Target _target;
-
-    private ObjectPool<Creature> _pool;
     private readonly int _poolCapacity = 10;
     private readonly int _maxPoolCapacity = 15;
 
-    private void Start()
-    {
-        InvokeRepeating(nameof(GetCreature), 0, _repeateRate);
-    }
+    [SerializeField] private float _repeateRate = 2;
+    [SerializeField] private Creature _creature;
+    [SerializeField] private Target _target;
+
+    private ObjectPool<Creature> _pool;
 
     private void Awake()
     {
         _pool = new ObjectPool<Creature>(
-        createFunc: () => Instantiate(_creaturePrefab),
+        createFunc: () => Instantiate(_creature),
         actionOnGet: (creature) => ActionOnget(creature),
         actionOnRelease: (creature) => creature.gameObject.SetActive(false),
         collectionCheck: true,
@@ -27,9 +24,14 @@ public class CreatureSpawner : MonoBehaviour
         maxSize: _maxPoolCapacity);
     }
 
+    private void Start()
+    {
+        StartCoroutine(Spawn());
+    }
+
     private void ActionOnget(Creature creature)
     {
-        creature.ActionEnd += Release;
+        creature.Reached += Release;
         creature.Init(_target);
         creature.transform.position = transform.position;
         creature.transform.rotation = transform.rotation;
@@ -43,10 +45,24 @@ public class CreatureSpawner : MonoBehaviour
 
     private void Release(Creature creature)
     {
-        creature.ActionEnd -= Release;
+        creature.Reached -= Release;
         creature.transform.position = transform.position;
-        creature.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        StopCreture(creature);
 
         _pool.Release(creature);
+    }
+
+    private void StopCreture(Creature creature)
+    {
+        creature.GetComponent<Rigidbody>().velocity = Vector3.zero;
+    }
+
+    private IEnumerator Spawn()
+    {
+        while (true)
+        {
+            GetCreature();
+            yield return new WaitForSeconds(_repeateRate);
+        }
     }
 }
